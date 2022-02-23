@@ -13,12 +13,12 @@ def create():
     try:
         data = request.get_json()
             
-        categorie = CategoriesModel(**data)
+        category = CategoriesModel(**data)
 
-        current_app.db.session.add(categorie)
+        current_app.db.session.add(category)
         current_app.db.session.commit()
      
-        return jsonify(categorie), HTTPStatus.CREATED
+        return jsonify(category), HTTPStatus.CREATED
 
     except KeyError as e:
         return dict(error=f"Missing key '{e.args[0]}'"), HTTPStatus.BAD_REQUEST

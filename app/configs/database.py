@@ -16,3 +16,4 @@ def init_app(app: Flask):
     app.db = db
 
     from app.models.categories_model import CategoriesModel
+    from app.models.eisenhowers_model import EisenhowersModel
