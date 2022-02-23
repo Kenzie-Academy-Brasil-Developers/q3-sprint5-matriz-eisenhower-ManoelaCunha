@@ -1,4 +1,3 @@
-from nis import cat
 from flask import Blueprint
 from app.controllers import categories_controller
 
