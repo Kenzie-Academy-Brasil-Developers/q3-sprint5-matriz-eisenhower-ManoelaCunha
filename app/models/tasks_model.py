@@ -22,7 +22,8 @@ class TasksModel(db.Model):
     eisenhower_id = Column(Integer, ForeignKey("eisenhowers.id"), nullable=False)
 
     eisenhower = relationship("EisenhowersModel", back_populates="task", uselist=False)
-    
+
+    task_category = relationship("TasksCategoriesModel", back_populates="task", uselist=True)
     
     def verify_classification(self):
      
