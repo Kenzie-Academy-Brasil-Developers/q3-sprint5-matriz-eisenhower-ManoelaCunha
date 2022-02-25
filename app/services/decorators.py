@@ -61,5 +61,3 @@ def verify_values(func):
                     ), HTTPStatus.BAD_REQUEST
 
     return value_is_valid
-
-
