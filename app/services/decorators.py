@@ -16,7 +16,9 @@ def verify_values(func):
        
         try:
             if 'urgency' in data and 'importance' in data:
-                if 0 < value_importance < 3 and 0 < value_urgency < 3:  
+                if 0 < value_importance < 3 and 0 < value_urgency < 3:
+                    if func.__name__ == 'update': 
+                        return func(id)
                     return func()
                 else:
                     raise ValueError
@@ -59,3 +61,5 @@ def verify_values(func):
                     ), HTTPStatus.BAD_REQUEST
 
     return value_is_valid
+
+
