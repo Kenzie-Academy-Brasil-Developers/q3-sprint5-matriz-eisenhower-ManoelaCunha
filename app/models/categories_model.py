@@ -8,6 +8,7 @@ class CategoriesModel(db.Model):
     id: int
     name: str
     description: str
+    tasks: list
    
     __tablename__ = "categories"
 
@@ -15,7 +16,7 @@ class CategoriesModel(db.Model):
     name = Column(String(50), unique=True, nullable=False)
     description = Column(String)
 
-    task_category = relationship("TasksCategoriesModel", back_populates="category", uselist=True)
+    tasks = relationship('TasksModel', secondary='tasks_categories', backref='categories')
 
     def __init__(self, **kwargs) -> None:
         self.name = kwargs['name'].lower()

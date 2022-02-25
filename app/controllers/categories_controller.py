@@ -44,7 +44,11 @@ def update(id):
         current_app.db.session.add(category)
         current_app.db.session.commit()
 
-        return jsonify(category), HTTPStatus.OK
+        return jsonify(dict(
+            id=category.id,
+            name=category.name,
+            description=category.description
+        )), HTTPStatus.OK
 
     except AttributeError:
         return dict(msg="category not found!"), HTTPStatus.NOT_FOUND

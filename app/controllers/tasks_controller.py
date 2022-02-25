@@ -2,8 +2,11 @@ from http import HTTPStatus
 from flask import request, current_app, jsonify
 
 from app.models.tasks_model import TasksModel
+from app.models.categories_model import CategoriesModel
 from app.models.eisenhowers_model import EisenhowersModel
+from app.models.tasks_categories_model import TasksCategoriesModel
 
+from sqlalchemy.orm import Query
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import UnmappedInstanceError
 
@@ -18,9 +21,8 @@ def create():
         data = request.get_json()
         data['name'] = data.get('name').lower()
         data['description'] = data.get('description').lower()
-  
+
         categories = data.pop('categories')
-        categories = [categorie.lower() for categorie in categories]
 
         task = TasksModel(**data)
 
@@ -29,61 +31,82 @@ def create():
         eisenhower = EisenhowersModel.query.filter_by(type=type_eisenhower).first()
 
         task.eisenhower_id = eisenhower.id
-     
-        current_app.db.session.add(task)
-        current_app.db.session.commit()
+       
+        for value in categories:  
+            category = CategoriesModel.query.filter_by(name=value.lower()).first()
+   
+            if category == None: 
+                new_data = dict(name=value.lower(), description="")
 
-        return jsonify(dict(id=task.id, 
-                    name=task.name, 
-                    description=task.description, 
-                    duration=task.duration,
-                    classification=eisenhower.type,
-                    categories=categories
-                    )), HTTPStatus.CREATED
+                new_category = CategoriesModel(**new_data)
+                current_app.db.session.add(new_category)
+
+                task.categories.append(new_category)
+                current_app.db.session.add(task)
+                current_app.db.session.commit()
+
+            else:
+                task.categories.append(category)
+                current_app.db.session.add(task)
+                current_app.db.session.commit()
+
+        return jsonify(dict(
+            id=task.id,
+            name=task.name,
+            description=task.description,
+            duration=task.duration,
+            classification=eisenhower.type,
+            categories=[category.lower() for category in categories]
+        )), HTTPStatus.CREATED
 
     except IntegrityError as e:
         if isinstance(e.orig, UniqueViolation):
             return dict(msg="task already exists!"), HTTPStatus.CONFLICT
 
 
+@verify_values
 def update(id):
     try:
         data = request.get_json()
-
-        name = [value.lower() for key, value in data.items() if key == 'name']
-        if name:
-            data['name'] = name[0]
         
-        base_query = current_app.db.session.query(TasksModel)
- 
-        task = base_query.get(id)
+        base_query_categories: Query = (
+            current_app.db.session.query(CategoriesModel.name)
+            .select_from(TasksCategoriesModel)
+            .join(CategoriesModel)
+            .join(TasksModel)
+            .filter(TasksModel.id == id)
+        )
+     
+        categories = ["".join(category) for category in base_query_categories.all()]
+
+        base_query_tasks = current_app.db.session.query(TasksModel)
+        
+        task = base_query_tasks.get(id)
 
         for key, value in data.items():
+            if key == 'name' or key == 'description':
+                value = value.lower()
+
             setattr(task, key, value)
 
         type_eisenhower = task.verify_classification()
 
         eisenhower = EisenhowersModel.query.filter_by(type=type_eisenhower).first()
-
-        task.eisenhower_id = eisenhower.id
-
+    
         current_app.db.session.add(task)
         current_app.db.session.commit()
 
-        return jsonify(
-            dict(id=task.id, 
-                    name=task.name, 
-                    description=task.description, 
-                    duration=task.duration,
-                    classification=eisenhower.type
-                    #categories=
-                    )), HTTPStatus.OK
-
+        return jsonify(dict(
+            id=task.id,
+            name=task.name, 
+            description=task.description,
+            duration=task.duration,
+            classification=eisenhower.type,
+            categories=categories
+        )), HTTPStatus.OK
+        
     except AttributeError:
         return dict(msg="task not found!"), HTTPStatus.NOT_FOUND
-    
-    except UnboundLocalError:
-        return dict(msg="Invalid value!"), HTTPStatus.BAD_REQUEST
 
 
 def delete(id):
