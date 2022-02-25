@@ -1,6 +1,9 @@
 from dataclasses import dataclass
+
+from sqlalchemy import Column, ForeignKey, Integer
+
 from app.configs.database import db
-from sqlalchemy import Column, Integer, ForeignKey
+
 
 @dataclass
 class TasksCategoriesModel(db.Model):

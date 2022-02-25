@@ -1,12 +1,11 @@
 from http import HTTPStatus
-from flask import request, current_app, jsonify
 
-from app.models.categories_model import CategoriesModel
-
+from flask import current_app, jsonify, request
+from psycopg2.errors import UniqueViolation
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import UnmappedInstanceError
 
-from psycopg2.errors import UniqueViolation
+from app.models.categories_model import CategoriesModel
 
 
 def create():

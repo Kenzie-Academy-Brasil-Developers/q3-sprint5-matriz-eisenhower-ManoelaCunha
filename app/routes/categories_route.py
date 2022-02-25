@@ -1,4 +1,5 @@
 from flask import Blueprint
+
 from app.controllers import categories_controller
 
 bp = Blueprint("categories", __name__, url_prefix="/categories")

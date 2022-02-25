@@ -1,7 +1,10 @@
 from dataclasses import dataclass
-from app.configs.database import db
+
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-from sqlalchemy import String, Column, Integer
+
+from app.configs.database import db
+
 
 @dataclass
 class EisenhowersModel(db.Model):
